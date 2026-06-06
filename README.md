@@ -16,5 +16,12 @@ A UCI-compliant chess engine made in under **10MB** as a personal challenge of m
 - [Piece eval](https://www.chessprogramming.org/Point_Value)
 - [PSQT eval](https://www.chessprogramming.org/Piece-Square_Tables)
 
+### Move Ordering
+- MVV-LVA (with bad capture filtering)
+- Promotions
+- Killer moves
+- History heuristic
+
+
 that's it :3
 

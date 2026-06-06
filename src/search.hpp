@@ -36,6 +36,25 @@ inline int pv_length[MAX_PLY]{};
 inline uint64_t nodes_searched = 0;
 inline std::atomic<bool> time_over(false);
 
+// Move ordering stuff
+static constexpr int MAX_KILLER_MOVES = 2;
+inline chess::Move killer_moves[MAX_KILLER_MOVES][MAX_PLY]{};
+inline int history_heuristic[2][64][64]{};
+inline static constexpr int16_t search_piece_values[6] = {100, 325, 350, 500, 900, 0};
+
+static constexpr int mvv_scores[6][6] = {
+    {6002, 20225, 20250, 20400, 20800, 26900},
+    {4775, 6004, 20025, 20175, 20575, 26675},
+    {4750, 4975, 6006, 20150, 20550, 26650},
+    {4600, 4825, 4850, 6008, 20400, 26500},
+    {4200, 4425, 4450, 4600, 6010, 26100},
+    {3100, 3325, 3350, 3500, 3900, 26000},
+};
+
+inline constexpr int mvv_lva(const chess::PieceType& attacker, const chess::PieceType& victim) {
+    return mvv_scores[static_cast<int>(attacker)][static_cast<int>(victim)];
+}
+
 // time limit in milliseconds
 inline std::chrono::milliseconds time_limit(0);
 

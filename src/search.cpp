@@ -1,5 +1,13 @@
 #include "search.hpp"
 #include "evaluate.hpp"
+#include "move_picker.hpp"
+
+void addKillerMove(chess::Move move, uint8_t ply) {
+    if (killer_moves[0][ply] != move.move()) {
+        killer_moves[1][ply] = killer_moves[0][ply];
+        killer_moves[0][ply] = move.move();
+    }
+}
 
 int Quiescence(chess::Board& board, int alpha, int beta, int search_ply, clk::time_point start_time) {
     assert(alpha >= -INFINITE);
@@ -24,8 +32,11 @@ int Quiescence(chess::Board& board, int alpha, int beta, int search_ply, clk::ti
 
     chess::Movelist moves;
     chess::movegen::legalmoves<chess::movegen::MoveGenType::CAPTURE>(moves, board);
+    ScoreMoves<true>(board, moves, search_ply);
 
-    for (const chess::Move& move : moves) {
+    for (int index = 0; index < moves.size(); ++index) {
+        PickMove(moves, index);
+        const chess::Move& move = moves[index];
         nodes_searched++;
 
         board.makeMove(move);
@@ -80,12 +91,16 @@ int AlphaBeta(chess::Board& board, int alpha, int beta, int depth, int search_pl
     }
 
     bool in_check  = board.inCheck();
+    chess::Color stm = board.sideToMove();
     int best_score = -INFINITE;
 
     chess::Movelist moves;
     chess::movegen::legalmoves(moves, board);
+    ScoreMoves<false>(board, moves, search_ply);
 
-    for (const chess::Move& move : moves) {
+    for (int index = 0; index < moves.size(); ++index) {
+        PickMove(moves, index);
+        const chess::Move& move = moves[index];
         nodes_searched++;
 
         board.makeMove(move);
@@ -102,6 +117,23 @@ int AlphaBeta(chess::Board& board, int alpha, int beta, int depth, int search_pl
         }
 
         if (alpha >= beta) {
+            if (!board.isCapture(move) && move.typeOf() != chess::Move::PROMOTION) {
+                addKillerMove(move, search_ply);
+
+                int bonus = depth * depth;
+                bool side = static_cast<bool>(stm);
+                int from = move.from().index();
+                int to = move.to().index();
+                
+                int history_score = (
+                    bonus
+                    - history_heuristic[side][from][to]
+                    * bonus
+                    / 16384
+                );
+
+                history_heuristic[side][from][to] += history_score;
+            }
             break;
         }
     }
@@ -116,6 +148,8 @@ int AlphaBeta(chess::Board& board, int alpha, int beta, int depth, int search_pl
 void IterativeDeepening(chess::Board& board) {
     chess::Move best_move = chess::Move::NO_MOVE;
 
+    memset(killer_moves, 0, sizeof(killer_moves));
+    memset(history_heuristic, 0, sizeof(history_heuristic));
     memset(pv, 0, sizeof(pv));
     memset(pv_length, 0, sizeof(pv_length));
 

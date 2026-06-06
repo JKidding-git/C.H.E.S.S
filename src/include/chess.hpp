@@ -1174,7 +1174,7 @@ class attacks {
      * @param square Attacked Square
      * @return
      */
-    [[nodiscard]] static Bitboard attackers(const Board& board, Color color, Square square) noexcept;
+    [[nodiscard]] static Bitboard attackers(const Board& board, Color color, Square square, const Bitboard occupied) noexcept;
 
     /**
      * @brief Returns the slider attacks for a given square
@@ -1272,10 +1272,10 @@ class Move {
      * @brief Set the score for a move. Useful if you later want to sort the moves.
      * @param score
      */
-    constexpr void setScore(std::int16_t score) noexcept { score_ = score; }
+    constexpr void setScore(std::int32_t score) noexcept { score_ = score; }
 
     [[nodiscard]] constexpr std::uint16_t move() const noexcept { return move_; }
-    [[nodiscard]] constexpr std::int16_t score() const noexcept { return score_; }
+    [[nodiscard]] constexpr std::int32_t score() const noexcept { return score_; }
 
     constexpr bool operator==(const Move& rhs) const noexcept { return move_ == rhs.move_; }
     constexpr bool operator!=(const Move& rhs) const noexcept { return move_ != rhs.move_; }
@@ -1289,7 +1289,7 @@ class Move {
 
    private:
     std::uint16_t move_;
-    std::int16_t score_;
+    std::int32_t score_;
 };
 
 }  // namespace chess
@@ -3698,9 +3698,8 @@ template <Color::underlying c>
 
 [[nodiscard]] inline Bitboard attacks::king(Square sq) noexcept { return KingAttacks[sq.index()]; }
 
-[[nodiscard]] inline Bitboard attacks::attackers(const Board& board, Color color, Square square) noexcept {
+[[nodiscard]] inline Bitboard attacks::attackers(const Board& board, Color color, Square square, const Bitboard occupied) noexcept {
     const auto queens   = board.pieces(PieceType::QUEEN, color);
-    const auto occupied = board.occ();
 
     // using the fact that if we can attack PieceType from square, they can attack us back
     auto atks = (pawn(~color, square) & board.pieces(PieceType::PAWN, color));
