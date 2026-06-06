@@ -120,6 +120,19 @@ int AlphaBeta(chess::Board& board, int alpha, int beta, int depth, int search_pl
 
     bool in_check    = board.inCheck();
     int16_t static_eval = evaluate(board);
+    
+    if (!is_pv && !root_node && !in_check && beta < MATE_IN_MAX_PLY && depth <= 7) {
+
+        // Reverse Futility Pruning
+        if (static_eval - 70 * depth >= beta) {
+            return static_eval - 70 * depth;
+        }
+
+        // Razoring
+        if (depth <= 3 && static_eval + 300 + 60 * depth < alpha) {
+            return Quiescence(board, alpha, beta, search_ply, start_time);
+        }
+    }
 
     // Null move pruning
     if (allow_null_move && !is_pv && !root_node && hasNonPawnMaterial(board) && static_eval >= beta && !in_check && search_ply >= min_nmp_ply) {
@@ -139,7 +152,6 @@ int AlphaBeta(chess::Board& board, int alpha, int beta, int depth, int search_pl
             if (validation_score >= beta) return validation_score;
         }
     }
-
 
     chess::Color stm = board.sideToMove();
     int best_score = -INFINITE;

@@ -10,6 +10,8 @@ A UCI-compliant chess engine made in under **10MB** as a personal challenge of m
 	- [Transposition Table](https://www.chessprogramming.org/Transposition_Table)
 	- [Principal Variation Search](https://www.chessprogramming.org/Principal_Variation_Search)
 	- [Null Move Pruning](https://www.chessprogramming.org/Null_Move_Pruning)
+	- [Reverse Futility Pruning](https://www.chessprogramming.org/Reverse_Futility_Pruning)
+	- [Razoring](https://www.chessprogramming.org/Razoring)
 - [Quiescence](https://www.chessprogramming.org/Quiescence_Search)
 - [Iterative Deepening](https://www.chessprogramming.org/Iterative_Deepening)
 	- [Aspiration Windows](https://www.chessprogramming.org/Aspiration_Windows)
