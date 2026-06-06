@@ -6,8 +6,9 @@ A UCI-compliant chess engine made in under **10MB** as a personal challenge of m
 ## Features
 ### Search
 - [AlphaBeta pruning](https://www.chessprogramming.org/Alpha-Beta)
-	- [Mate distance pruning](https://www.chessprogramming.org/Mate_Distance_Pruning)
+	- [Mate Distance Pruning](https://www.chessprogramming.org/Mate_Distance_Pruning)
 	- [Transposition Table](https://www.chessprogramming.org/Transposition_Table)
+	- [Principal Variation Search](https://www.chessprogramming.org/Principal_Variation_Search)
 - [Quiescence](https://www.chessprogramming.org/Quiescence_Search)
 - [Iterative Deepening](https://www.chessprogramming.org/Iterative_Deepening)
 	- [Aspiration Windows](https://www.chessprogramming.org/Aspiration_Windows)
@@ -23,7 +24,6 @@ A UCI-compliant chess engine made in under **10MB** as a personal challenge of m
 - Promotions
 - Killer moves
 - History heuristic
-
 
 that's it :3
 

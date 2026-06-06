@@ -92,6 +92,9 @@ int AlphaBeta(chess::Board& board, int alpha, int beta, int depth, int search_pl
         if (alpha >= beta) return alpha;
     }
 
+    bool is_pv = (beta - alpha) > 1;
+    int score  = 0;
+
     // Transposition Table Lookup
     // tt_hits and tt_misses are just for statistics and debugging
     // and has no effect on the actual search.
@@ -107,14 +110,14 @@ int AlphaBeta(chess::Board& board, int alpha, int beta, int depth, int search_pl
             int16_t tt_score = CorrectScore(tt_entry->score, search_ply);
 
             if (!root_node) {
-                if (flag == TTFlag::EXACT) return tt_score;
-                else if (flag == TTFlag::TT_BETA && tt_score >= beta) return tt_score;
-                else if (flag == TTFlag::TT_ALPHA && tt_score <= alpha) return tt_score;
+                if (flag == TTFlag::EXACT)                                        return tt_score;
+                else if (!is_pv && flag == TTFlag::TT_BETA && tt_score >= beta)   return tt_score;
+                else if (!is_pv && flag == TTFlag::TT_ALPHA && tt_score <= alpha) return tt_score;
             }
         }
     } else {tt_misses++;}
 
-    bool in_check  = board.inCheck();
+    bool in_check    = board.inCheck();
     chess::Color stm = board.sideToMove();
     int best_score = -INFINITE;
     chess::Move best_move = chess::Move::NO_MOVE;
@@ -129,7 +132,17 @@ int AlphaBeta(chess::Board& board, int alpha, int beta, int depth, int search_pl
         nodes_searched++;
 
         board.makeMove(move);
-        int score = -AlphaBeta(board, -beta, -alpha, depth - 1, search_ply + 1, start_time);
+
+        // Principal Variation Search (PVS)
+        if (index == 0) {
+            score = -AlphaBeta(board, -beta, -alpha, depth - 1, search_ply + 1, start_time);
+        } else {
+            score = -AlphaBeta(board, -alpha - 1, -alpha, depth - 1, search_ply + 1, start_time);
+            if (score > alpha && is_pv) {
+                score = -AlphaBeta(board, -beta, -alpha, depth - 1, search_ply + 1, start_time);
+            }
+        }
+        
         board.unmakeMove(move);
 
         if (time_over) return 0;
