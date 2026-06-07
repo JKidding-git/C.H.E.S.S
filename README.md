@@ -1,4 +1,3 @@
-
 # C.H.E.S.S - *C*learly *HE*'*S* *S*tupid
 
 A UCI-compliant chess engine made in under **10MB** as a personal challenge of mine.
@@ -12,6 +11,8 @@ A UCI-compliant chess engine made in under **10MB** as a personal challenge of m
 	- [Null Move Pruning](https://www.chessprogramming.org/Null_Move_Pruning)
 	- [Reverse Futility Pruning](https://www.chessprogramming.org/Reverse_Futility_Pruning)
 	- [Razoring](https://www.chessprogramming.org/Razoring)
+	- [Late Move Reductions](https://www.chessprogramming.org/Late_Move_Reductions)
+	- [Search Extension](https://www.chessprogramming.org/Extensions)
 - [Quiescence](https://www.chessprogramming.org/Quiescence_Search)
 - [Iterative Deepening](https://www.chessprogramming.org/Iterative_Deepening)
 	- [Aspiration Windows](https://www.chessprogramming.org/Aspiration_Windows)

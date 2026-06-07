@@ -4,6 +4,7 @@
 #include <chrono>
 #include <atomic>
 #include <thread>
+#include <cmath>
 
 using clk = std::chrono::steady_clock;
 
@@ -37,6 +38,18 @@ inline uint64_t nodes_searched = 0;
 inline std::atomic<bool> time_over(false);
 inline uint64_t tt_hits = 0;
 inline uint64_t tt_misses = 0;
+
+// other stuff
+inline static constexpr int LMR_DIVISOR = 267;
+inline int lmr[MAX_PLY][256]{};
+
+inline void initializeLMR() {
+    for (int depth = 0; depth < MAX_PLY; depth++) {
+        for (int move_count = 0; move_count < 256; move_count++) {
+            lmr[depth][move_count] = static_cast<int>(1.25 * std::log(depth) * std::log(move_count) * 100 / LMR_DIVISOR);
+        }
+    }
+}
 
 // Move ordering stuff
 static constexpr int MAX_KILLER_MOVES = 2;

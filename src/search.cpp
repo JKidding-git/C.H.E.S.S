@@ -10,6 +10,28 @@ void addKillerMove(chess::Move move, uint8_t ply) {
     }
 }
 
+int computeLMR(
+    chess::Board& board, int depth, int move_count, chess::Move tt_move, int SEE_score,
+    bool is_pv, bool is_capture, bool is_promotion, chess::Move move, bool in_nmp, int search_ply
+) {
+    int reductions = (
+        move_count < 2 - (tt_move != chess::Move::NO_MOVE) + is_pv ||
+        depth <= 2 || (is_capture && SEE_score > 0) ||
+        (is_promotion && move.promotionType() == chess::PieceType::QUEEN)
+    ) ? 0 : lmr[depth][move_count];
+
+    if (move_count > 0 && depth > 2 && in_nmp) reductions++;
+
+    if (reductions) {
+        reductions -= is_pv;
+
+        if (reductions > MAX_PLY) reductions = 0;
+        if (reductions > depth - 2) reductions = depth - 2;
+    }
+
+    return reductions;
+}
+
 int Quiescence(chess::Board& board, int alpha, int beta, int search_ply, clk::time_point start_time) {
     assert(alpha >= -INFINITE);
     assert(beta <= INFINITE);
@@ -157,24 +179,43 @@ int AlphaBeta(chess::Board& board, int alpha, int beta, int depth, int search_pl
     int best_score = -INFINITE;
     chess::Move best_move = chess::Move::NO_MOVE;
 
+    int extension = 0;
+    extension += in_check;
+
     chess::Movelist moves;
     chess::movegen::legalmoves(moves, board);
     ScoreMoves<false>(board, moves, search_ply, tt_move);
 
-    for (int index = 0; index < moves.size(); index++) {
+    int move_size = moves.size();
+
+    for (int index = 0; index < move_size; index++) {
         PickMove(moves, index);
         const chess::Move& move = moves[index];
         nodes_searched++;
+
+        bool is_capture   = board.isCapture(move);
+        bool is_promotion = move.typeOf() == chess::Move::PROMOTION;
+        int  SEE_score    = SEE(board, move);
 
         board.makeMove(move);
 
         // Principal Variation Search (PVS)
         if (index == 0) {
-            score = -AlphaBeta(board, -beta, -alpha, depth - 1, search_ply + 1, start_time, true);
+            score = -AlphaBeta(board, -beta, -alpha, depth - 1 + extension, search_ply + 1, start_time, true);
         } else {
-            score = -AlphaBeta(board, -alpha - 1, -alpha, depth - 1, search_ply + 1, start_time, true);
+            int reductions = computeLMR(
+                board, depth, move_size, tt_move, SEE_score, is_pv,
+                is_capture, is_promotion,
+                move, !allow_null_move, search_ply
+            );
+
+            score = -AlphaBeta(board, -alpha - 1, -alpha, depth - 1 + extension - reductions, search_ply + 1, start_time, true);
+            if (score > alpha && reductions > 0) {
+                score = -AlphaBeta(board, -alpha - 1, -alpha, depth - 1 + extension, search_ply + 1, start_time, true);
+            }
+
             if (score > alpha && is_pv) {
-                score = -AlphaBeta(board, -beta, -alpha, depth - 1, search_ply + 1, start_time, true);
+                score = -AlphaBeta(board, -beta, -alpha, depth - 1 + extension, search_ply + 1, start_time, true);
             }
         }
 
@@ -191,7 +232,7 @@ int AlphaBeta(chess::Board& board, int alpha, int beta, int depth, int search_pl
         }
 
         if (alpha >= beta) {
-            if (!board.isCapture(move) && move.typeOf() != chess::Move::PROMOTION) {
+            if (!is_capture && !is_promotion) {
                 addKillerMove(move, search_ply);
 
                 int bonus = depth * depth;
