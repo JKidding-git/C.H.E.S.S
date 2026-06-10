@@ -60,6 +60,9 @@ int Quiescence(chess::Board& board, int alpha, int beta, int search_ply, clk::ti
     for (int index = 0; index < moves.size(); index++) {
         PickMove(moves, index);
         const chess::Move& move = moves[index];
+
+        if (move.typeOf() != chess::Move::PROMOTION && move.score() == BAD_CAPTURE_SCORE) continue;
+
         nodes_searched++;
 
         board.makeMove(move);

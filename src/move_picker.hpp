@@ -2,6 +2,8 @@
 #include "include/chess.hpp"
 #include "search.hpp"
 
+inline static constexpr int BAD_CAPTURE_SCORE = -100;
+
 inline chess::Bitboard GetLeastValuablePieceSQ(const chess::Board& board, chess::Color color, chess::Bitboard attacks_bits, chess::PieceType &piece) {
     for (chess::PieceType p : {chess::PieceType::PAWN, chess::PieceType::KNIGHT, chess::PieceType::BISHOP, chess::PieceType::ROOK, chess::PieceType::QUEEN, chess::PieceType::KING}) {
         chess::Bitboard subsets = attacks_bits & board.pieces(p, color);
@@ -78,7 +80,7 @@ inline void ScoreMoves(const chess::Board& board, chess::Movelist& moves, uint8_
             chess::PieceType attacker = board.at<chess::PieceType>(move.from());
 
             if (isBadCapture(board, move)) {
-                move.setScore(-100);
+                move.setScore(BAD_CAPTURE_SCORE);
                 continue;
             }
 
@@ -101,7 +103,7 @@ inline void ScoreMoves(const chess::Board& board, chess::Movelist& moves, uint8_
                 chess::PieceType attacker = board.at<chess::PieceType>(move.from());
 
                 if (isBadCapture(board, move)) {
-                    move.setScore(-100);
+                    move.setScore(BAD_CAPTURE_SCORE);
                     continue;
                 }
 
