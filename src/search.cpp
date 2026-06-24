@@ -109,7 +109,7 @@ int AlphaBeta(chess::Board& board, int alpha, int beta, int depth, int search_pl
 
     bool root_node = (search_ply == 0);
     if (!root_node) {
-        if (board.isRepetition())           return value_draw();
+        if (board.isRepetition(1))          return value_draw();
         if (board.isHalfMoveDraw())         return DRAW;
         if (board.isInsufficientMaterial()) return DRAW;
 
